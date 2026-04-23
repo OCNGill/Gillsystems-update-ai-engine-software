@@ -1,0 +1,21 @@
+# GASU — Python Dependencies
+# Gillsystems AI Stack Updater
+
+# HTTP client for GitHub API and AMD repo queries
+httpx>=0.27.0
+
+# Rich terminal output, progress bars, tables
+rich>=13.7.0
+
+# Config validation and data models
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+
+# Version comparison
+packaging>=24.0
+
+# YAML config file loading
+PyYAML>=6.0.1
+
+# Optional: colored logging
+colorlog>=6.8.0
