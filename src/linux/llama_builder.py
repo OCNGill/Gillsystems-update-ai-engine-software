@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import List
 
 from src.cli import print_dry_run, print_error, print_info, print_step, print_success, print_warning
-from src.config import GASUConfig
+from src.config import GillsystemsAIStackUpdaterConfig
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class LlamaBuilderLinux:
     """Clones, builds, and installs llama.cpp on Linux with AMD HIP."""
 
-    def __init__(self, cfg: GASUConfig, gpu_targets: List[str]) -> None:
+    def __init__(self, cfg: GillsystemsAIStackUpdaterConfig, gpu_targets: List[str]) -> None:
         self.cfg = cfg
         self.gpu_targets = gpu_targets
         self.source_dir = Path(cfg.paths.llama_cpp_source).expanduser()

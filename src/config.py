@@ -1,5 +1,5 @@
 """
-config.py — Pydantic configuration models for GASU.
+config.py — Pydantic configuration models for Gillsystems AI Stack Updater.
 
 Loads from config/default_config.yaml with environment variable overrides.
 """
@@ -70,8 +70,8 @@ class BehaviorConfig(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class GASUConfig(BaseModel):
-    """Root configuration object for GASU."""
+class GillsystemsAIStackUpdaterConfig(BaseModel):
+    """Root configuration object for Gillsystems AI Stack Updater."""
     gpu: GpuConfig = Field(default_factory=GpuConfig)
     paths: PathsConfig = Field(default_factory=PathsConfig)
     repo: RepoConfig = Field(default_factory=RepoConfig)
@@ -111,7 +111,7 @@ def load_config(
     auto_yes: bool = False,
     force: bool = False,
     verbose: bool = False,
-) -> GASUConfig:
+) -> GillsystemsAIStackUpdaterConfig:
     """
     Load configuration from YAML file and apply CLI flag overrides.
 
@@ -123,7 +123,7 @@ def load_config(
         verbose: Override behavior.verbose.
 
     Returns:
-        GASUConfig instance.
+        GillsystemsAIStackUpdaterConfig instance.
     """
     path = config_path or _resolve_config_path()
 
@@ -132,7 +132,7 @@ def load_config(
         with path.open("r", encoding="utf-8") as fh:
             raw = yaml.safe_load(fh) or {}
 
-    cfg = GASUConfig.model_validate(raw)
+    cfg = GillsystemsAIStackUpdaterConfig.model_validate(raw)
 
     # CLI flag overrides
     if dry_run:
@@ -145,11 +145,11 @@ def load_config(
         cfg.behavior.verbose = True
 
     # Environment variable overrides
-    if os.environ.get("GASU_DRY_RUN", "").lower() in ("1", "true", "yes"):
+    if os.environ.get("GILLSYSTEMS_AI_STACK_UPDATER_DRY_RUN", "").lower() in ("1", "true", "yes"):
         cfg.behavior.dry_run = True
-    if os.environ.get("GASU_VERBOSE", "").lower() in ("1", "true", "yes"):
+    if os.environ.get("GILLSYSTEMS_AI_STACK_UPDATER_VERBOSE", "").lower() in ("1", "true", "yes"):
         cfg.behavior.verbose = True
-    if os.environ.get("GASU_LOG_LEVEL"):
-        cfg.log_level = os.environ["GASU_LOG_LEVEL"].upper()
+    if os.environ.get("GILLSYSTEMS_AI_STACK_UPDATER_LOG_LEVEL"):
+        cfg.log_level = os.environ["GILLSYSTEMS_AI_STACK_UPDATER_LOG_LEVEL"].upper()
 
     return cfg

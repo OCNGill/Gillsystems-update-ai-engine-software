@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Privilege check — re-execute with sudo if not root
 # -----------------------------------------------------------
 if [[ $EUID -ne 0 ]]; then
-    echo "[GASU] Requesting sudo privileges..."
+    echo "[Gillsystems AI Stack Updater] Requesting sudo privileges..."
     exec sudo -E bash "$0" "$@"
 fi
 
@@ -35,13 +35,13 @@ for candidate in python3.12 python3.11 python3 python; do
 done
 
 if [[ -z "$PYTHON_BIN" ]]; then
-    echo "[GASU] ERROR: Python 3.11+ is required but not found."
+    echo "[Gillsystems AI Stack Updater] ERROR: Python 3.11+ is required but not found."
     echo "  Ubuntu/Debian: sudo apt install python3.11"
     echo "  Fedora/RHEL:   sudo dnf install python3.11"
     exit 1
 fi
 
-echo "[GASU] Using Python: $($PYTHON_BIN --version)"
+echo "[Gillsystems AI Stack Updater] Using Python: $($PYTHON_BIN --version)"
 
 # -----------------------------------------------------------
 # Install dependencies (once or when requirements change)
@@ -50,7 +50,7 @@ cd "$SCRIPT_DIR"
 
 DEPS_MARKER=".deps_installed"
 if [[ ! -f "$DEPS_MARKER" ]] || [[ "requirements.txt" -nt "$DEPS_MARKER" ]]; then
-    echo "[GASU] Installing Python dependencies..."
+    echo "[Gillsystems AI Stack Updater] Installing Python dependencies..."
     "$PYTHON_BIN" -m pip install --quiet -r requirements.txt
     touch "$DEPS_MARKER"
 fi

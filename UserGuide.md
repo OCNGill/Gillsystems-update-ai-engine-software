@@ -2,7 +2,7 @@
   <img src="Gillsystems_logo_stuff/Gill%20Systems%20Logo.png" alt="Gill Systems Logo" width="800">
 </p>
 
-# User Guide: Gillsystems AI Stack Updater Agent (GASU)
+# User Guide: Gillsystems AI Stack Updater Agent
 
 ## 📌 Getting Started
 
@@ -24,7 +24,7 @@ Launch the updater agent directly from your terminal:
 
 ## 🏗️ Architecture & State Tracking
 
-GASU implements a fully reboot-resilient architecture that tracks state progressively into a local SQLite ledger `state/checkpoint.db`, meaning the application safely picks up right where it left off! 
+Gillsystems AI Stack Updater implements a fully reboot-resilient architecture that tracks state progressively into a local SQLite ledger `state/checkpoint.db`, meaning the application safely picks up right where it left off! 
 
 - The main `Orchestrator` validates system state against upstream versions (`version_intel`).
 - Distinct `Linux` and `Windows` Sub-Agents handle platform-specific operations:

@@ -11,7 +11,7 @@
 NET SESSION >nul 2>&1
 IF %ERRORLEVEL% NEQ 0 (
     echo.
-    echo  [GASU] Requesting Administrator privileges...
+    echo  [Gillsystems AI Stack Updater] Requesting Administrator privileges...
     powershell -NoProfile -Command ^
         "Start-Process -FilePath '%~f0' -ArgumentList '%*' -Verb RunAs"
     exit /b
@@ -24,7 +24,7 @@ cd /d "%~dp0"
 python --version >nul 2>&1
 IF %ERRORLEVEL% NEQ 0 (
     echo.
-    echo  [GASU] ERROR: Python not found on PATH.
+    echo  [Gillsystems AI Stack Updater] ERROR: Python not found on PATH.
     echo  Please install Python 3.11+ and ensure it is on your PATH.
     echo.
     pause
@@ -35,7 +35,7 @@ IF %ERRORLEVEL% NEQ 0 (
 python -c "import sys; exit(0 if sys.version_info >= (3,11) else 1)" >nul 2>&1
 IF %ERRORLEVEL% NEQ 0 (
     echo.
-    echo  [GASU] ERROR: Python 3.11 or higher is required.
+    echo  [Gillsystems AI Stack Updater] ERROR: Python 3.11 or higher is required.
     python --version
     echo.
     pause
@@ -44,10 +44,10 @@ IF %ERRORLEVEL% NEQ 0 (
 
 :: Install dependencies if requirements.txt is newer than last install marker
 IF NOT EXIST ".deps_installed" (
-    echo  [GASU] Installing Python dependencies...
+    echo  [Gillsystems AI Stack Updater] Installing Python dependencies...
     python -m pip install --quiet -r requirements.txt
     IF %ERRORLEVEL% NEQ 0 (
-        echo  [GASU] ERROR: Failed to install dependencies.
+        echo  [Gillsystems AI Stack Updater] ERROR: Failed to install dependencies.
         pause
         exit /b 1
     )
@@ -62,7 +62,7 @@ SET EXIT_CODE=%ERRORLEVEL%
 IF %EXIT_CODE% NEQ 0 (
     IF %EXIT_CODE% NEQ 130 (
         echo.
-        echo  [GASU] Exited with code %EXIT_CODE%.
+        echo  [Gillsystems AI Stack Updater] Exited with code %EXIT_CODE%.
         pause
     )
 )

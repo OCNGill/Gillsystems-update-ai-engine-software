@@ -1,5 +1,5 @@
 """
-state_manager.py — SQLite-backed checkpoint ledger for GASU.
+state_manager.py — SQLite-backed checkpoint ledger for Gillsystems AI Stack Updater.
 
 Each step is idempotent. On startup the orchestrator checks for an incomplete
 run and resumes from the last successful step. A JSON handoff file is written

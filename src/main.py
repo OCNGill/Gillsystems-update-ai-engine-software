@@ -1,5 +1,5 @@
 """
-main.py — GASU Orchestrator / Entry Point
+main.py — Gillsystems AI Stack Updater Orchestrator / Entry Point
 
 Top-level state machine:
   CHECK → UPDATE_ROCM → [REBOOT? →] UPDATE_LLAMA → VALIDATE → DONE
@@ -25,13 +25,13 @@ from src.cli import (
     print_version_table,
     print_warning,
 )
-from src.config import load_config, GASUConfig
+from src.config import load_config, GillsystemsAIStackUpdaterConfig
 from src.gpu_detect import GPUDetector
 from src.privilege import ensure_admin, is_admin
 from src.state_manager import StateManager, StepStatus
 from src.version_intel import VersionIntel, UpdateManifest
 
-logger = logging.getLogger("gasu")
+logger = logging.getLogger("gillsystems_ai_stack_updater")
 
 
 # ---------------------------------------------------------------------------
@@ -41,10 +41,10 @@ logger = logging.getLogger("gasu")
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="gasu",
+        prog="gillsystems-ai-stack-updater",
         description="Gillsystems AI Stack Updater — ROCm/HIP + llama.cpp",
     )
-    parser.add_argument("--version", action="version", version=f"GASU {__version__}")
+    parser.add_argument("--version", action="version", version=f"Gillsystems AI Stack Updater {__version__}")
     parser.add_argument("--dry-run", action="store_true", help="Show what would happen without making changes.")
     parser.add_argument("--yes", "-y", action="store_true", dest="auto_yes", help="Auto-confirm all prompts.")
     parser.add_argument("--force", action="store_true", help="Re-run all steps even if already done.")
@@ -62,7 +62,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 class Orchestrator:
-    def __init__(self, cfg: GASUConfig, resume: bool = False, skip_rocm: bool = False, skip_llama: bool = False) -> None:
+    def __init__(self, cfg: GillsystemsAIStackUpdaterConfig, resume: bool = False, skip_rocm: bool = False, skip_llama: bool = False) -> None:
         self.cfg = cfg
         self.resume = resume
         self.skip_rocm = skip_rocm

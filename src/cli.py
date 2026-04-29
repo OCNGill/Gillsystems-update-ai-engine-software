@@ -1,5 +1,5 @@
 """
-cli.py — Rich terminal UI for GASU.
+cli.py — Rich terminal UI for Gillsystems AI Stack Updater.
 
 Provides colored output, progress bars, dry-run warnings, step logs,
 and a final summary table.
@@ -52,7 +52,7 @@ err_console = Console(theme=_THEME, highlight=False, stderr=True)
 
 
 def print_banner(dry_run: bool = False) -> None:
-    title = "Gillsystems AI Stack Updater (GASU)"
+    title = "Gillsystems AI Stack Updater"
     subtitle = "ROCm/HIP + llama.cpp — AMD Consumer GPU Edition"
     if dry_run:
         subtitle += "   [dry_run]◀ DRY-RUN MODE — no changes will be made ▶[/dry_run]"

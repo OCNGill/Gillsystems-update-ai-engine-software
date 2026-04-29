@@ -19,7 +19,7 @@ from typing import Optional
 import httpx
 
 from src.cli import print_dry_run, print_error, print_info, print_step, print_success, print_warning
-from src.config import GASUConfig
+from src.config import GillsystemsAIStackUpdaterConfig
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ _HIP_SDK_DOWNLOAD_BASE = "https://repo.radeon.com/rocm/msi"
 class HIPUpdater:
     """Downloads and silently installs the AMD HIP SDK on Windows."""
 
-    def __init__(self, cfg: GASUConfig) -> None:
+    def __init__(self, cfg: GillsystemsAIStackUpdaterConfig) -> None:
         self.cfg = cfg
 
     def update(self) -> bool:

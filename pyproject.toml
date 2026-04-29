@@ -45,7 +45,7 @@ dev = [
 ]
 
 [project.scripts]
-gasu = "src.main:main"
+gillsystems-ai-stack-updater = "src.main:main"
 
 [project.urls]
 Homepage = "https://github.com/OCNGill/Gillsystems-update-ai-engine-software"

@@ -1,7 +1,7 @@
 # Track Spec: T-001-agent-core
 
 ## Objective
-Establish the foundational architecture, state management, and cross-platform sub-agent orchestration for the Gillsystems AI Stack Updater (GASU).
+Establish the foundational architecture, state management, and cross-platform sub-agent orchestration for the Gillsystems AI Stack Updater.
 
 ## Scope
 - Core Orchestrator (`main.py`)

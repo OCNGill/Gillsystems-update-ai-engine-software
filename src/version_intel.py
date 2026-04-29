@@ -1,5 +1,5 @@
 """
-version_intel.py — Version Intelligence for GASU.
+version_intel.py — Version Intelligence for Gillsystems AI Stack Updater.
 
 Queries GitHub Releases API for llama.cpp and AMD repos for ROCm/HIP,
 then compares against locally installed versions to produce an UpdateManifest.

@@ -12,11 +12,11 @@ import subprocess
 from pathlib import Path
 
 from src.cli import print_dry_run, print_info, print_step, print_success, print_warning
-from src.config import GASUConfig
+from src.config import GillsystemsAIStackUpdaterConfig
 
 logger = logging.getLogger(__name__)
 
-_SERVICE_NAME = "gasu-resume.service"
+_SERVICE_NAME = "gillsystems-ai-stack-updater-resume.service"
 _SERVICE_PATH = Path(f"/etc/systemd/system/{_SERVICE_NAME}")
 
 _SERVICE_TEMPLATE = """\
@@ -41,7 +41,7 @@ WantedBy=multi-user.target
 class RebootHandler:
     """Manages the systemd one-shot resume service and initiates reboot."""
 
-    def __init__(self, cfg: GASUConfig) -> None:
+    def __init__(self, cfg: GillsystemsAIStackUpdaterConfig) -> None:
         self.cfg = cfg
         self.launcher_path = self._find_launcher()
 

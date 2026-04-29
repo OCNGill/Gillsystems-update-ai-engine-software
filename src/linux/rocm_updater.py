@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Optional
 
 from src.cli import print_dry_run, print_error, print_info, print_step, print_success, print_warning
-from src.config import GASUConfig
+from src.config import GillsystemsAIStackUpdaterConfig
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ _AMDGPU_INSTALL_BASE = "https://repo.radeon.com/amdgpu-install/latest/ubuntu"
 class ROCmUpdater:
     """Installs/upgrades ROCm on Linux using amdgpu-install."""
 
-    def __init__(self, cfg: GASUConfig) -> None:
+    def __init__(self, cfg: GillsystemsAIStackUpdaterConfig) -> None:
         self.cfg = cfg
 
     def update(self) -> bool:

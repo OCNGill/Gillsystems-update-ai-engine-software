@@ -1,1 +1,1 @@
-# GASU Test Suite
+# Gillsystems AI Stack Updater Test Suite

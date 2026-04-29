@@ -13,18 +13,18 @@ from unittest.mock import MagicMock, patch, call
 
 import pytest
 
-from src.config import load_config, GASUConfig
+from src.config import load_config, GillsystemsAIStackUpdaterConfig
 
 
 @pytest.fixture
-def dry_run_cfg() -> GASUConfig:
+def dry_run_cfg() -> GillsystemsAIStackUpdaterConfig:
     cfg = load_config()
     cfg.behavior.dry_run = True
     return cfg
 
 
 @pytest.fixture
-def live_cfg() -> GASUConfig:
+def live_cfg() -> GillsystemsAIStackUpdaterConfig:
     cfg = load_config()
     cfg.behavior.dry_run = False
     return cfg
@@ -36,7 +36,7 @@ def live_cfg() -> GASUConfig:
 
 
 class TestHIPUpdaterFinder:
-    def test_find_latest_returns_url_and_version(self, dry_run_cfg: GASUConfig):
+    def test_find_latest_returns_url_and_version(self, dry_run_cfg: GillsystemsAIStackUpdaterConfig):
         """Verify that the latest installer URL resolves to a plausible AMD URL."""
         pytest.importorskip("httpx")
 
@@ -60,7 +60,7 @@ class TestHIPUpdaterFinder:
         assert "HIP-SDK-Installer" in url
         assert version is not None
 
-    def test_find_latest_falls_back_gracefully(self, dry_run_cfg: GASUConfig):
+    def test_find_latest_falls_back_gracefully(self, dry_run_cfg: GillsystemsAIStackUpdaterConfig):
         """When HTTP fails, it falls back to hardcoded URL."""
         from src.windows.hip_updater import HIPUpdater
 
@@ -86,7 +86,7 @@ class TestHIPUpdaterFinder:
 
 
 class TestHIPUpdaterDryRun:
-    def test_update_dry_run_no_downloads(self, dry_run_cfg: GASUConfig):
+    def test_update_dry_run_no_downloads(self, dry_run_cfg: GillsystemsAIStackUpdaterConfig):
         from src.windows.hip_updater import HIPUpdater
 
         updater = HIPUpdater(dry_run_cfg)
@@ -103,7 +103,7 @@ class TestHIPUpdaterDryRun:
         # No real subprocess calls in dry-run
         assert result is False
 
-    def test_run_silent_install_dry_run_returns_false(self, dry_run_cfg: GASUConfig):
+    def test_run_silent_install_dry_run_returns_false(self, dry_run_cfg: GillsystemsAIStackUpdaterConfig):
         from src.windows.hip_updater import HIPUpdater
 
         updater = HIPUpdater(dry_run_cfg)
@@ -120,7 +120,7 @@ class TestHIPUpdaterDryRun:
 
 
 class TestHIPSilentInstall:
-    def test_exit_code_0_no_reboot(self, live_cfg: GASUConfig):
+    def test_exit_code_0_no_reboot(self, live_cfg: GillsystemsAIStackUpdaterConfig):
         from src.windows.hip_updater import HIPUpdater
 
         updater = HIPUpdater(live_cfg)
@@ -135,7 +135,7 @@ class TestHIPSilentInstall:
 
         assert result is False
 
-    def test_exit_code_3010_requires_reboot(self, live_cfg: GASUConfig):
+    def test_exit_code_3010_requires_reboot(self, live_cfg: GillsystemsAIStackUpdaterConfig):
         """Exit code 3010 is MSI's 'success, reboot required' convention."""
         from src.windows.hip_updater import HIPUpdater
 
@@ -151,7 +151,7 @@ class TestHIPSilentInstall:
 
         assert result is True
 
-    def test_exit_code_nonzero_raises(self, live_cfg: GASUConfig):
+    def test_exit_code_nonzero_raises(self, live_cfg: GillsystemsAIStackUpdaterConfig):
         from src.windows.hip_updater import HIPUpdater
 
         updater = HIPUpdater(live_cfg)
@@ -172,7 +172,7 @@ class TestHIPSilentInstall:
 
 
 class TestWindowsRebootHandler:
-    def test_register_task_dry_run(self, dry_run_cfg: GASUConfig):
+    def test_register_task_dry_run(self, dry_run_cfg: GillsystemsAIStackUpdaterConfig):
         from src.windows.reboot_handler import RebootHandler
 
         handler = RebootHandler(dry_run_cfg)
@@ -181,7 +181,7 @@ class TestWindowsRebootHandler:
             handler.register_resume_task()
         mock_run.assert_not_called()
 
-    def test_unregister_task_dry_run(self, dry_run_cfg: GASUConfig):
+    def test_unregister_task_dry_run(self, dry_run_cfg: GillsystemsAIStackUpdaterConfig):
         from src.windows.reboot_handler import RebootHandler
 
         handler = RebootHandler(dry_run_cfg)
@@ -189,7 +189,7 @@ class TestWindowsRebootHandler:
             handler.unregister_resume_task()
         mock_run.assert_not_called()
 
-    def test_reboot_dry_run(self, dry_run_cfg: GASUConfig):
+    def test_reboot_dry_run(self, dry_run_cfg: GillsystemsAIStackUpdaterConfig):
         from src.windows.reboot_handler import RebootHandler
 
         handler = RebootHandler(dry_run_cfg)
@@ -197,7 +197,7 @@ class TestWindowsRebootHandler:
             handler.reboot()
         mock_run.assert_not_called()
 
-    def test_register_task_live_calls_schtasks(self, live_cfg: GASUConfig):
+    def test_register_task_live_calls_schtasks(self, live_cfg: GillsystemsAIStackUpdaterConfig):
         from src.windows.reboot_handler import RebootHandler, _TASK_NAME
 
         handler = RebootHandler(live_cfg)

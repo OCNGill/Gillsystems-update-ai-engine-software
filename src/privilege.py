@@ -1,5 +1,5 @@
 """
-privilege.py — Privilege elevation for GASU.
+privilege.py — Privilege elevation for Gillsystems AI Stack Updater.
 
 Linux:  checks os.geteuid() == 0, re-executes with sudo if needed.
 Windows: checks IsUserAnAdmin(), re-launches with ShellExecute runas if needed.

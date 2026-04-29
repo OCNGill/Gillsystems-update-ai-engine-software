@@ -12,17 +12,17 @@ import subprocess
 from pathlib import Path
 
 from src.cli import print_dry_run, print_info, print_step, print_success, print_warning
-from src.config import GASUConfig
+from src.config import GillsystemsAIStackUpdaterConfig
 
 logger = logging.getLogger(__name__)
 
-_TASK_NAME = "GASUResumeTask"
+_TASK_NAME = "GillsystemsAIStackUpdaterResumeTask"
 
 
 class RebootHandler:
     """Manages a Windows Scheduled Task for reboot-resume and triggers reboots."""
 
-    def __init__(self, cfg: GASUConfig) -> None:
+    def __init__(self, cfg: GillsystemsAIStackUpdaterConfig) -> None:
         self.cfg = cfg
         self.launcher_path = self._find_launcher()
 
@@ -85,14 +85,14 @@ class RebootHandler:
     def reboot(self) -> None:
         """Initiate a Windows system reboot."""
         if self.cfg.behavior.dry_run:
-            print_dry_run("Would run: shutdown /r /t 10 /c 'GASU: Reboot for driver installation'")
+            print_dry_run("Would run: shutdown /r /t 10 /c 'Gillsystems AI Stack Updater: Reboot for driver installation'")
             return
 
         print_info("Initiating system reboot in 10 seconds...")
         subprocess.run(
             [
                 "shutdown", "/r", "/t", "10",
-                "/c", "GASU: Rebooting to complete AMD driver installation",
+                "/c", "Gillsystems AI Stack Updater: Rebooting to complete AMD driver installation",
             ],
             check=True,
             timeout=15,

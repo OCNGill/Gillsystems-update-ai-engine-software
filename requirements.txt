@@ -1,4 +1,4 @@
-# GASU — Python Dependencies
+# Gillsystems AI Stack Updater — Python Dependencies
 # Gillsystems AI Stack Updater
 
 # HTTP client for GitHub API and AMD repo queries

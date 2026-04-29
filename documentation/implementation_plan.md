@@ -29,11 +29,11 @@ Each "developer" below is a focused specialization that will be applied during i
 
 ## Product Description
 
-### **Gillsystems AI Stack Updater (GASU)**
+### **Gillsystems AI Stack Updater**
 
 > *"One command. Both OSes. Always current."*
 
-GASU is a portable, invocation-only Python agent that ensures your AMD consumer GPU AI stack is always running the latest stable ROCm/HIP and llama.cpp. It runs with elevated privileges, handles reboots transparently, and picks up exactly where it left off.
+Gillsystems AI Stack Updater is a portable, invocation-only Python agent that ensures your AMD consumer GPU AI stack is always running the latest stable ROCm/HIP and llama.cpp. It runs with elevated privileges, handles reboots transparently, and picks up exactly where it left off.
 
 ### Features
 - **🔍 Smart Detection** — Queries GitHub Releases API and AMD repos to compare installed vs. latest versions
@@ -253,7 +253,7 @@ gillsystems-update-ai-engine-software/
 - Validates: runs `llama-cli --version` or a quick benchmark
 
 #### [NEW] [reboot_handler.py](file:///c:/Users/Gillsystems%20Laptop/source/repos/OCNGill/Gillsystems-update-ai-engine-software/src/linux/reboot_handler.py) (Linux)
-- Creates a transient systemd service (`gasu-resume.service`) that runs once on next boot
+- Creates a transient systemd service (`gillsystems-ai-stack-updater-resume.service`) that runs once on next boot
 - Service invokes `update-ai-stack.sh --resume`
 - After resume completes, the service self-disables and deletes
 - Initiates `sudo reboot` after checkpoint is saved
@@ -282,7 +282,7 @@ gillsystems-update-ai-engine-software/
 - Creates a one-shot Scheduled Task via `schtasks /create` that runs at logon
 - Task executes `update-ai-stack.bat --resume`
 - After resume, the task self-deletes
-- Initiates `shutdown /r /t 10 /c "GASU: Reboot for driver installation"`
+- Initiates `shutdown /r /t 10 /c "Gillsystems AI Stack Updater: Reboot for driver installation"`
 
 ---
 

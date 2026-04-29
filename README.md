@@ -2,7 +2,7 @@
   <img src="Gillsystems_logo_stuff/Gill%20Systems%20Logo.png" alt="Gill Systems Logo" width="800">
 </p>
 
-# Gillsystems AI Stack Updater (GASU)
+# Gillsystems AI Stack Updater 
 
 > *"One command. Both OSes. Always current."*
 
@@ -11,7 +11,7 @@
 [![AMD GPU](https://img.shields.io/badge/GPU-AMD%20ROCm%2FHIP-red?logo=amd)](https://rocm.docs.amd.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**GASU** is a portable, invocation-only Python agent that keeps your AMD consumer GPU AI stack — ROCm/HIP and llama.cpp — current on both Windows and Linux with a single command. No manual headaches. Reboot-resilient. Fully automated.
+**Gillsystems AI Stack Updater** is a portable, invocation-only Python agent that keeps your AMD consumer GPU AI stack — ROCm/HIP and llama.cpp — current on both Windows and Linux with a single command. No manual headaches. Reboot-resilient. Fully automated.
 
 ---
 
@@ -42,7 +42,7 @@ Keeping ROCm/HIP and llama.cpp up to date on AMD consumer GPUs involves a deep d
 kernel drivers → amdgpu → ROCm runtime → HIP → rocBLAS → hipBLAS → llama.cpp (GGML_HIP)
 ```
 
-**GASU** automates the entire chain:
+**Gillsystems AI Stack Updater** automates the entire chain:
 
 1. Detects your currently installed versions against the upstream stable releases (GitHub Releases API + AMD repo probing).
 2. Downloads, compiles (if needed), and installs new versions automatically using `amdgpu-install` on Linux and the silent HIP SDK installer on Windows.
@@ -123,7 +123,7 @@ python -m src.main --check-only
 ## CLI Reference
 
 ```
-usage: gasu [-h] [--dry-run] [--check-only] [--yes] [--force]
+usage: gillsystems-ai-stack-updater [-h] [--dry-run] [--check-only] [--yes] [--force]
             [--no-rocm] [--no-llama] [--config CONFIG]
             [--gpu-targets TARGETS [TARGETS ...]] [--verbose] [--version]
 ```
@@ -139,13 +139,13 @@ usage: gasu [-h] [--dry-run] [--check-only] [--yes] [--force]
 | `--config PATH` | Path to a custom config YAML (default: `config/default_config.yaml`) |
 | `--gpu-targets T [T ...]` | Override GPU architecture targets (e.g. `gfx1100 gfx1030`) |
 | `--verbose` | Enable verbose/debug logging |
-| `--version` | Print GASU version and exit |
+| `--version` | Print Gillsystems AI Stack Updater version and exit |
 
 ---
 
 ## Configuration
 
-GASU reads `config/default_config.yaml` on startup. Every setting can also be overridden via environment variable.
+Gillsystems AI Stack Updater reads `config/default_config.yaml` on startup. Every setting can also be overridden via environment variable.
 
 ### Key Config Sections (`config/default_config.yaml`)
 
@@ -157,8 +157,8 @@ gpu:
 paths:
   llama_src: ~/llama.cpp                   # where to clone llama.cpp
   llama_install: /usr/local                # cmake --install prefix (Linux)
-  state_db: ~/.gasu/state.db               # SQLite checkpoint database
-  log_dir: ~/.gasu/logs                    # log file directory
+  state_db: ~/.gillsystems-ai-stack-updater/state.db               # SQLite checkpoint database
+  log_dir: ~/.gillsystems-ai-stack-updater/logs                    # log file directory
 
 behavior:
   auto_reboot: false                       # require user confirmation before rebooting
@@ -174,9 +174,9 @@ repos:
 
 | Variable | Effect |
 |---|---|
-| `GASU_DRY_RUN=1` | Enables dry-run mode |
-| `GASU_VERBOSE=1` | Enables verbose logging |
-| `GASU_LOG_LEVEL=DEBUG` | Sets log level (DEBUG/INFO/WARNING/ERROR) |
+| `GILLSYSTEMS_AI_STACK_UPDATER_DRY_RUN=1` | Enables dry-run mode |
+| `GILLSYSTEMS_AI_STACK_UPDATER_VERBOSE=1` | Enables verbose logging |
+| `GILLSYSTEMS_AI_STACK_UPDATER_LOG_LEVEL=DEBUG` | Sets log level (DEBUG/INFO/WARNING/ERROR) |
 
 ---
 
@@ -262,7 +262,7 @@ CREATE TABLE steps (
 | Radeon VII / Vega 64 | Vega20 | `gfx906` |
 | RX 580 / 590 | Polaris | `gfx803` |
 
-GASU auto-detects the correct targets using `rocminfo`, `/sys/class/drm`, `lspci -nn`, `wmi`, and `hipInfo`. Manual override is available via `--gpu-targets` or the config file.
+Gillsystems AI Stack Updater auto-detects the correct targets using `rocminfo`, `/sys/class/drm`, `lspci -nn`, `wmi`, and `hipInfo`. Manual override is available via `--gpu-targets` or the config file.
 
 ---
 
@@ -293,13 +293,13 @@ Tests use `pytest-mock` and `responses` for isolation — no real network calls 
 
 When a ROCm driver update requires a reboot:
 
-1. GASU writes a **reboot handoff JSON** file (`~/.gasu/reboot_handoff.json`) recording the current `run_id` and the next step to execute.
-2. GASU registers a **resume task**:
-   - **Linux:** writes `/etc/systemd/system/gasu-resume.service` (one-shot, self-disabling), runs `systemctl enable`.
-   - **Windows:** creates `GASUResumeTask` via `schtasks /create /sc ONLOGON /rl HIGHEST`.
-3. GASU initiates the OS reboot (`shutdown /r` or `systemctl reboot`).
-4. After the system boots, the resume task runs GASU automatically.
-5. GASU reads the handoff file, restores the `run_id`, and continues from the saved step.
+1. Gillsystems AI Stack Updater writes a **reboot handoff JSON** file (`~/.gillsystems-ai-stack-updater/reboot_handoff.json`) recording the current `run_id` and the next step to execute.
+2. Gillsystems AI Stack Updater registers a **resume task**:
+   - **Linux:** writes `/etc/systemd/system/gillsystems-ai-stack-updater-resume.service` (one-shot, self-disabling), runs `systemctl enable`.
+   - **Windows:** creates `GillsystemsAIStackUpdaterResumeTask` via `schtasks /create /sc ONLOGON /rl HIGHEST`.
+3. Gillsystems AI Stack Updater initiates the OS reboot (`shutdown /r` or `systemctl reboot`).
+4. After the system boots, the resume task runs Gillsystems AI Stack Updater automatically.
+5. Gillsystems AI Stack Updater reads the handoff file, restores the `run_id`, and continues from the saved step.
 6. The resume task is unregistered immediately after successful pickup.
 7. The handoff file is deleted after the run completes.
 
