@@ -51,6 +51,10 @@ class RepoConfig(BaseModel):
     hip_sdk_download_base: str = Field(
         default="https://repo.radeon.com/rocm/msi"
     )
+    bleeding_edge: bool = Field(
+        default=False,
+        description="Use master branch instead of latest stable release."
+    )
 
 
 class BehaviorConfig(BaseModel):
@@ -111,6 +115,7 @@ def load_config(
     auto_yes: bool = False,
     force: bool = False,
     verbose: bool = False,
+    bleeding_edge: bool = False,
 ) -> GillsystemsAIStackUpdaterConfig:
     """
     Load configuration from YAML file and apply CLI flag overrides.
@@ -143,6 +148,8 @@ def load_config(
         cfg.behavior.force = True
     if verbose:
         cfg.behavior.verbose = True
+    if bleeding_edge:
+        cfg.repo.bleeding_edge = True
 
     # Environment variable overrides
     if os.environ.get("GILLSYSTEMS_AI_STACK_UPDATER_DRY_RUN", "").lower() in ("1", "true", "yes"):

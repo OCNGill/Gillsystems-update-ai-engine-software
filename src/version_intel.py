@@ -68,8 +68,9 @@ class VersionIntel:
     GITHUB_LLAMA_URL = "https://api.github.com/repos/ggml-org/llama.cpp/releases/latest"
     ROCM_VERSION_URL = "https://repo.radeon.com/rocm/apt/latest/dists/focal/Release"
 
-    def __init__(self, timeout: int = 15) -> None:
+    def __init__(self, timeout: int = 15, bleeding_edge: bool = False) -> None:
         self._timeout = timeout
+        self._bleeding_edge = bleeding_edge
 
     # ------------------------------------------------------------------
     # Public API
@@ -236,6 +237,10 @@ class VersionIntel:
                 resp.raise_for_status()
                 data = resp.json()
                 tag = data.get("tag_name", "")
+                if self._bleeding_edge:
+                    # In bleeding edge mode, we don't care about the tag, 
+                    # we return 'master' to signify we want the latest.
+                    return "master (bleeding-edge)", None
                 if tag:
                     return tag, None
                 return None, "No tag_name in GitHub response"
@@ -268,6 +273,9 @@ def _version_lt(installed: str, latest: str) -> bool:
     latest_num = re.search(r"b(\d+)", latest)
     if installed_num and latest_num:
         return int(installed_num.group(1)) < int(latest_num.group(1))
+
+    if "master" in latest:
+        return True  # Always update in bleeding-edge mode
 
     # Try semver comparison
     try:

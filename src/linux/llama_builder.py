@@ -49,12 +49,24 @@ class LlamaBuilderLinux:
         required_tools = ["cmake", "git", "hipcc"]
         optional_tools = ["ninja"]
 
+        tier = get_compute_tier(self.gpu_targets)
         for tool in required_tools:
             if not shutil.which(tool):
-                raise RuntimeError(
-                    f"Required tool '{tool}' not found. "
-                    "Install cmake, git, and ROCm HIP SDK before proceeding."
-                )
+                if tool == "hipcc":
+                    if tier == 1:
+                        raise RuntimeError(
+                            f"Required tool '{tool}' not found. "
+                            "Tier 1 hardware REQUIRES the ROCm HIP SDK."
+                        )
+                    else:
+                        print_warning(
+                            "hipcc not found. Tier 2 hardware detected — falling back to Vulkan."
+                        )
+                else:
+                    raise RuntimeError(
+                        f"Required tool '{tool}' not found. "
+                        "Install cmake, git, and build tools before proceeding."
+                    )
 
         self._use_ninja = bool(shutil.which("ninja"))
         if not self._use_ninja:
@@ -95,17 +107,25 @@ class LlamaBuilderLinux:
 
     def _configure_cmake(self) -> None:
         targets_str = ";".join(self.gpu_targets)
+        use_hip = bool(shutil.which("hipcc"))
 
         cmake_args = [
             "cmake",
             "-S", str(self.source_dir),
             "-B", str(self.build_dir),
-            f"-DAMDGPU_TARGETS={targets_str}",
-            "-DGGML_HIP=ON",
-            "-DGGML_HIP_ROCWMMA_FATTN=ON",
             "-DCMAKE_BUILD_TYPE=Release",
             f"-DCMAKE_INSTALL_PREFIX={self.install_dir}",
         ]
+
+        if use_hip:
+            cmake_args += [
+                f"-DAMDGPU_TARGETS={targets_str}",
+                "-DGGML_HIP=ON",
+                "-DGGML_HIP_ROCWMMA_FATTN=ON",
+            ]
+        else:
+            cmake_args.append("-DGGML_VULKAN=ON")
+            print_info("Enabling Vulkan backend (HIP fallback for mobile/edge targets).")
 
         if self._use_ninja:
             cmake_args += ["-GNinja"]

@@ -62,10 +62,15 @@ class LlamaBuilderWindows:
                     f"Required tool '{tool}' not found. Install it before proceeding."
                 )
 
+        tier = get_compute_tier(self.gpu_targets)
         if not shutil.which("hipcc"):
-            raise RuntimeError(
-                "hipcc not found. Install the AMD HIP SDK and ensure it is on PATH."
-            )
+            if tier == 1:
+                raise RuntimeError(
+                    "hipcc not found. Tier 1 hardware REQUIRES the AMD HIP SDK. "
+                    "Install it and ensure it is on PATH before proceeding."
+                )
+            else:
+                print_warning("hipcc not found. Tier 2 hardware detected — falling back to Vulkan.")
 
         # Locate vcvarsall.bat
         for path_str in _VCVARS_SEARCH_PATHS:
@@ -75,6 +80,11 @@ class LlamaBuilderWindows:
                 break
 
         if not self._vcvars:
+            if tier == 1:
+                raise RuntimeError(
+                    "Visual Studio Build Tools not found. "
+                    "Tier 1 hardware requires MSVC for optimized ROCm/HIP compilation."
+                )
             print_warning(
                 "Visual Studio Build Tools not found. "
                 "Attempting without vcvarsall.bat — build may fail."
@@ -123,28 +133,35 @@ class LlamaBuilderWindows:
 
         # Find HIP_PATH from environment or default location
         hip_path = os.environ.get("HIP_PATH", _find_hip_path())
+        use_hip = bool(shutil.which("hipcc"))
 
         cmake_args = [
             "cmake",
             "-S", str(self.source_dir),
             "-B", str(self.build_dir),
-            f"-DAMDGPU_TARGETS={targets_str}",
-            "-DGGML_HIP=ON",
-            "-DGGML_HIP_ROCWMMA_FATTN=ON",
             "-DCMAKE_BUILD_TYPE=Release",
             f"-DCMAKE_INSTALL_PREFIX={self.install_dir}",
         ]
 
-        if hip_path:
-            cmake_args.append(f"-DHIP_PATH={hip_path}")
+        if use_hip:
+            cmake_args += [
+                f"-DAMDGPU_TARGETS={targets_str}",
+                "-DGGML_HIP=ON",
+                "-DGGML_HIP_ROCWMMA_FATTN=ON",
+            ]
+            if hip_path:
+                cmake_args.append(f"-DHIP_PATH={hip_path}")
+        else:
+            cmake_args.append("-DGGML_VULKAN=ON")
+            print_info("Enabling Vulkan backend (HIP fallback for mobile/edge targets).")
 
         if self._use_ninja:
-            cmake_args += [
-                "-GNinja",
-                f"-DCMAKE_C_COMPILER={hip_path}/bin/clang.exe" if hip_path else "",
-                f"-DCMAKE_CXX_COMPILER={hip_path}/bin/clang++.exe" if hip_path else "",
-            ]
-            cmake_args = [a for a in cmake_args if a]  # remove empty strings
+            cmake_args += ["-GNinja"]
+            if use_hip and hip_path:
+                cmake_args += [
+                    f"-DCMAKE_C_COMPILER={hip_path}/bin/clang.exe",
+                    f"-DCMAKE_CXX_COMPILER={hip_path}/bin/clang++.exe",
+                ]
         else:
             cmake_args += ["-G", "Visual Studio 17 2022", "-A", "x64"]
 

@@ -53,6 +53,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", type=Path, default=None, metavar="FILE", help="Path to custom config YAML.")
     parser.add_argument("--skip-rocm", action="store_true", help="Skip ROCm/HIP update step.")
     parser.add_argument("--skip-llama", action="store_true", help="Skip llama.cpp build step.")
+    parser.add_argument("--bleeding-edge", action="store_true", help="Compile from the master branch instead of latest stable tag (Zero-day support).")
     return parser
 
 
@@ -70,7 +71,7 @@ class Orchestrator:
 
         state_dir = Path(cfg.paths.state_dir)
         self.state = StateManager(state_dir)
-        self.intel = VersionIntel()
+        self.intel = VersionIntel(bleeding_edge=cfg.repo.bleeding_edge)
         self.gpu = GPUDetector()
         self.manifest: UpdateManifest | None = None
         self.updates_applied: list[tuple[str, str, str]] = []
@@ -448,6 +449,7 @@ def main() -> None:
         auto_yes=args.auto_yes,
         force=args.force,
         verbose=args.verbose,
+        bleeding_edge=args.bleeding_edge,
     )
 
     # Configure logging
