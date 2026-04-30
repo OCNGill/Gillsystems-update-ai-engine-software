@@ -34,6 +34,11 @@ _PRODUCT_TO_GFX: dict[str, str] = {
     "RX 6600":     "gfx1032",
     "RX 6500 XT":  "gfx1034",
     "RX 6400":     "gfx1034",
+    # Steam Deck / Van Gogh APU (RDNA 2)
+    "AMD Custom GPU 0405": "gfx1033",
+    # Mobile APUs / Vega
+    "Radeon Vega": "gfx90c",
+    "AMD Radeon Graphics": "gfx1036",  # General fallback for modern mobile APUs
     # RDNA 1 (GFX10)
     "RX 5700 XT":  "gfx1010",
     "RX 5700":     "gfx1010",
@@ -45,6 +50,18 @@ _PRODUCT_TO_GFX: dict[str, str] = {
 
 # Fallback default when detection fails
 DEFAULT_TARGETS: List[str] = ["gfx1100", "gfx1030"]
+
+
+def get_compute_tier(targets: List[str]) -> int:
+    """
+    Returns 1 for Production-Grade GPUs (MUST use ROCm/HIP).
+    Returns 2 for Mobile/Edge APUs (allowed Vulkan fallback, needs UMA).
+    """
+    tier_1 = {"gfx1100", "gfx1101", "gfx1102", "gfx1030", "gfx1031", "gfx1032"}
+    for t in targets:
+        if t in tier_1:
+            return 1
+    return 2
 
 
 class GPUDetector:

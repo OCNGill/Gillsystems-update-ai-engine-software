@@ -16,6 +16,7 @@ from typing import List
 
 from src.cli import print_dry_run, print_error, print_info, print_step, print_success, print_warning
 from src.config import GillsystemsAIStackUpdaterConfig
+from src.gpu_detect import get_compute_tier
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,7 @@ class LlamaBuilderLinux:
             "-B", str(self.build_dir),
             f"-DAMDGPU_TARGETS={targets_str}",
             "-DGGML_HIP=ON",
+            "-DGGML_HIP_ROCWMMA_FATTN=ON",
             "-DCMAKE_BUILD_TYPE=Release",
             f"-DCMAKE_INSTALL_PREFIX={self.install_dir}",
         ]
@@ -124,6 +126,11 @@ class LlamaBuilderLinux:
     def _build(self) -> None:
         n_jobs = os.cpu_count() or 4
 
+        env = os.environ.copy()
+        if get_compute_tier(self.gpu_targets) == 2:
+            print_info("Tier 2 Mobile/Edge architecture detected. Injecting LLAMA_HIP_UMA=1.")
+            env["LLAMA_HIP_UMA"] = "1"
+
         if self._use_ninja:
             build_cmd = ["ninja", "-C", str(self.build_dir), f"-j{n_jobs}"]
         else:
@@ -138,7 +145,7 @@ class LlamaBuilderLinux:
             return
 
         print_step(f"Building llama.cpp with {n_jobs} cores...")
-        _run(build_cmd)
+        _run(build_cmd, env=env)
         print_success("Build complete.")
 
     # ------------------------------------------------------------------
@@ -192,10 +199,10 @@ class LlamaBuilderLinux:
 # ---------------------------------------------------------------------------
 
 
-def _run(cmd: list[str], timeout: int = 3600) -> None:
+def _run(cmd: list[str], timeout: int = 3600, env: dict | None = None) -> None:
     """Run a command, streaming output to the terminal. Raises on failure."""
     logger.debug("Running: %s", " ".join(cmd))
-    result = subprocess.run(cmd, timeout=timeout)
+    result = subprocess.run(cmd, timeout=timeout, env=env)
     if result.returncode != 0:
         raise RuntimeError(f"Command failed (exit {result.returncode}): {' '.join(cmd)}")
 

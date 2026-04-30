@@ -15,6 +15,7 @@ from typing import List, Optional
 
 from src.cli import print_dry_run, print_error, print_info, print_step, print_success, print_warning
 from src.config import GillsystemsAIStackUpdaterConfig
+from src.gpu_detect import get_compute_tier
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +130,7 @@ class LlamaBuilderWindows:
             "-B", str(self.build_dir),
             f"-DAMDGPU_TARGETS={targets_str}",
             "-DGGML_HIP=ON",
+            "-DGGML_HIP_ROCWMMA_FATTN=ON",
             "-DCMAKE_BUILD_TYPE=Release",
             f"-DCMAKE_INSTALL_PREFIX={self.install_dir}",
         ]
@@ -164,6 +166,11 @@ class LlamaBuilderWindows:
     def _build(self) -> None:
         n_jobs = os.cpu_count() or 4
 
+        env = _build_env(self._vcvars) if self._vcvars else os.environ.copy()
+        if get_compute_tier(self.gpu_targets) == 2:
+            print_info("Tier 2 Mobile/Edge architecture detected. Injecting LLAMA_HIP_UMA=1.")
+            env["LLAMA_HIP_UMA"] = "1"
+
         if self._use_ninja:
             build_cmd = ["ninja", "-C", str(self.build_dir), f"-j{n_jobs}"]
         else:
@@ -178,7 +185,6 @@ class LlamaBuilderWindows:
             return
 
         print_step(f"Building llama.cpp with {n_jobs} cores...")
-        env = _build_env(self._vcvars) if self._vcvars else None
         _run(build_cmd, env=env)
         print_success("Build complete.")
 
