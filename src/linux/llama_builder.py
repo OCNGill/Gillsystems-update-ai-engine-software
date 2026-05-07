@@ -82,6 +82,7 @@ class LlamaBuilderLinux:
     # ------------------------------------------------------------------
 
     def _clone_or_pull(self) -> None:
+        # Linux uses AMD's ROCm fork per AMD documentation
         repo_url = self.cfg.repo.llama_cpp_repo
 
         if self.cfg.behavior.dry_run:
@@ -122,6 +123,7 @@ class LlamaBuilderLinux:
                 f"-DAMDGPU_TARGETS={targets_str}",
                 "-DGGML_HIP=ON",
                 "-DGGML_HIP_ROCWMMA_FATTN=ON",
+                "-DLLAMA_CURL=ON",   # AMD docs require this flag
             ]
         else:
             cmake_args.append("-DGGML_VULKAN=ON")
@@ -147,6 +149,22 @@ class LlamaBuilderLinux:
         n_jobs = os.cpu_count() or 4
 
         env = os.environ.copy()
+
+        # AMD docs: set HIPCXX and HIP_PATH via hipconfig before cmake build
+        if shutil.which("hipconfig"):
+            try:
+                hipcxx_dir = subprocess.check_output(
+                    ["hipconfig", "-l"], text=True
+                ).strip()
+                hip_path = subprocess.check_output(
+                    ["hipconfig", "-R"], text=True
+                ).strip()
+                env["HIPCXX"] = f"{hipcxx_dir}/clang"
+                env["HIP_PATH"] = hip_path
+                print_info(f"HIPCXX={env['HIPCXX']}  HIP_PATH={hip_path}")
+            except Exception as exc:
+                print_warning(f"hipconfig query failed: {exc} — using default env")
+
         if get_compute_tier(self.gpu_targets) == 2:
             print_info("Tier 2 Mobile/Edge architecture detected. Injecting LLAMA_HIP_UMA=1.")
             env["LLAMA_HIP_UMA"] = "1"

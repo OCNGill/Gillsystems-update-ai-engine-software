@@ -105,7 +105,8 @@ class LlamaBuilderWindows:
     # ------------------------------------------------------------------
 
     def _clone_or_pull(self) -> None:
-        repo_url = self.cfg.repo.llama_cpp_repo
+        # Windows uses the mainstream ggml-org fork (AMD has no native Windows ROCm build docs)
+        repo_url = self.cfg.repo.llama_cpp_repo_windows
 
         if self.cfg.behavior.dry_run:
             if self.source_dir.exists():

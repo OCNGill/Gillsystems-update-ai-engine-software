@@ -8,10 +8,17 @@
 gpu:
   # AMDGPU_TARGETS passed to CMake when building llama.cpp.
   # auto_detect=true will attempt runtime detection and override this list.
+  # Wide range from AMD docs: gfx803,gfx900,gfx906,gfx908,gfx90a,gfx942,
+  #   gfx1010,gfx1030,gfx1032,gfx1100,gfx1101,gfx1102
   targets:
     - gfx1100    # RDNA 3 — RX 7900 XTX / 7900 XT / 7900 GRE
     - gfx1101    # RDNA 3 — RX 7800 XT / 7700 XT
+    - gfx1102    # RDNA 3 — RX 7600
     - gfx1030    # RDNA 2 — RX 6900 XT / 6800 XT / 6800
+    - gfx1032    # RDNA 2 — RX 6700 XT / 6700
+    - gfx1010    # RDNA 1 — RX 5700 XT / 5700
+    - gfx90a     # CDNA 2 — Instinct MI200 series
+    - gfx942     # CDNA 3 — Instinct MI300 series
   auto_detect: true
 
 # ------------------------------------------------------------
@@ -28,10 +35,13 @@ paths:
 # Upstream repositories
 # ------------------------------------------------------------
 repo:
-  llama_cpp_repo:       "https://github.com/ggml-org/llama.cpp.git"
-  llama_cpp_github_api: "https://api.github.com/repos/ggml-org/llama.cpp/releases/latest"
-  rocm_repo_base:       "https://repo.radeon.com/amdgpu-install/latest"
-  hip_sdk_download_base: "https://repo.radeon.com/rocm/msi"
+  # Linux: AMD's maintained ROCm fork — per AMD official documentation
+  # https://rocm.docs.amd.com/projects/llama-cpp/en/docs-26.02/install/llama-cpp-install.html
+  llama_cpp_repo:         "https://github.com/ROCm/llama.cpp.git"
+  # Windows: mainstream ggml-org fork (AMD has no native Windows ROCm build docs)
+  llama_cpp_repo_windows: "https://github.com/ggml-org/llama.cpp.git"
+  rocm_repo_base:         "https://repo.radeon.com/amdgpu-install/latest"
+  hip_sdk_download_base:  "https://repo.radeon.com/rocm/msi"
 
 # ------------------------------------------------------------
 # Runtime behavior

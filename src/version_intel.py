@@ -69,8 +69,12 @@ class UpdateManifest:
 class VersionIntel:
     """Checks installed and upstream versions for ROCm/HIP and llama.cpp."""
 
-    GITHUB_LLAMA_URL = "https://api.github.com/repos/ggml-org/llama.cpp/releases/latest"
-    ROCM_VERSION_URL = "https://repo.radeon.com/rocm/apt/latest/dists/focal/Release"
+    # AMD's maintained ROCm fork (Linux — per AMD docs)
+    GITHUB_LLAMA_ROCM_OWNER = "ROCm"
+    GITHUB_LLAMA_ROCM_REPO  = "llama.cpp"
+    # Mainstream fork (Windows)
+    GITHUB_LLAMA_GGML_OWNER = "ggml-org"
+    GITHUB_LLAMA_GGML_REPO  = "llama.cpp"
 
     def __init__(self, timeout: int = 15, bleeding_edge: bool = False) -> None:
         self._timeout = timeout
@@ -231,14 +235,23 @@ class VersionIntel:
         return None
 
     def _get_latest_llama(self) -> tuple[Optional[str], Optional[str]]:
-        """Query GitHub for the latest llama.cpp release tag."""
+        """Query GitHub for the latest llama.cpp release tag.
+
+        Linux  → AMD's ROCm fork (ROCm/llama.cpp) per AMD documentation.
+        Windows → mainstream ggml-org fork (no AMD native Windows ROCm build docs).
+        """
         if self._bleeding_edge:
             return "master (bleeding-edge)", None
 
-        tag = self._github_latest_tag("ggml-org", "llama.cpp")
+        if sys.platform == "linux":
+            owner, repo = self.GITHUB_LLAMA_ROCM_OWNER, self.GITHUB_LLAMA_ROCM_REPO
+        else:
+            owner, repo = self.GITHUB_LLAMA_GGML_OWNER, self.GITHUB_LLAMA_GGML_REPO
+
+        tag = self._github_latest_tag(owner, repo)
         if tag:
             return tag, None
-        return None, "Could not determine latest llama.cpp version"
+        return None, f"Could not determine latest llama.cpp version from {owner}/{repo}"
 
     def _github_latest_tag(self, owner: str, repo: str) -> Optional[str]:
         """

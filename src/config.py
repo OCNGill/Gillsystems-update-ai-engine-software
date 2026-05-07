@@ -41,10 +41,10 @@ class PathsConfig(BaseModel):
 
 class RepoConfig(BaseModel):
     """Upstream source repositories."""
-    llama_cpp_repo: str = Field(default="https://github.com/ggml-org/llama.cpp.git")
-    llama_cpp_github_api: str = Field(
-        default="https://api.github.com/repos/ggml-org/llama.cpp/releases/latest"
-    )
+    # Linux: AMD's maintained ROCm fork (per AMD docs)
+    llama_cpp_repo: str = Field(default="https://github.com/ROCm/llama.cpp.git")
+    # Windows: mainstream ggml-org fork (AMD has no native Windows ROCm build docs)
+    llama_cpp_repo_windows: str = Field(default="https://github.com/ggml-org/llama.cpp.git")
     rocm_repo_base: str = Field(
         default="https://repo.radeon.com/amdgpu-install/latest"
     )
