@@ -6,6 +6,7 @@ then compares against locally installed versions to produce an UpdateManifest.
 """
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -30,7 +31,10 @@ class ComponentVersion:
     error: Optional[str] = None
 
     def __post_init__(self) -> None:
-        if self.installed and self.latest and not self.needs_update:
+        if self.installed is None:
+            # Component not installed at all — always needs installation
+            self.needs_update = True
+        elif self.latest and not self.needs_update:
             self.needs_update = _version_lt(self.installed, self.latest)
 
 
@@ -227,27 +231,59 @@ class VersionIntel:
         return None
 
     def _get_latest_llama(self) -> tuple[Optional[str], Optional[str]]:
-        """Query GitHub API for the latest llama.cpp release tag."""
+        """Query GitHub for the latest llama.cpp release tag."""
+        if self._bleeding_edge:
+            return "master (bleeding-edge)", None
+
+        tag = self._github_latest_tag("ggml-org", "llama.cpp")
+        if tag:
+            return tag, None
+        return None, "Could not determine latest llama.cpp version"
+
+    def _github_latest_tag(self, owner: str, repo: str) -> Optional[str]:
+        """
+        Return the latest release tag for a GitHub repo.
+
+        Strategy:
+          1. REST API with optional GITHUB_TOKEN (5 000 req/hr authenticated,
+             60/hr unauthenticated).
+          2. HTML redirect fallback — follow github.com/.../releases/latest;
+             the final URL contains the tag and is not rate-limited by the API.
+        """
+        headers = {"Accept": "application/vnd.github+json"}
+        token = os.environ.get("GITHUB_TOKEN")
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+
+        # Strategy 1: REST API
         try:
             with httpx.Client(timeout=self._timeout, follow_redirects=True) as client:
                 resp = client.get(
-                    self.GITHUB_LLAMA_URL,
-                    headers={"Accept": "application/vnd.github+json"},
+                    f"https://api.github.com/repos/{owner}/{repo}/releases/latest",
+                    headers=headers,
                 )
-                resp.raise_for_status()
-                data = resp.json()
-                tag = data.get("tag_name", "")
-                if self._bleeding_edge:
-                    # In bleeding edge mode, we don't care about the tag, 
-                    # we return 'master' to signify we want the latest.
-                    return "master (bleeding-edge)", None
-                if tag:
-                    return tag, None
-                return None, "No tag_name in GitHub response"
-        except httpx.HTTPStatusError as exc:
-            return None, f"GitHub API HTTP {exc.response.status_code}"
-        except Exception as exc:
-            return None, str(exc)
+                if resp.status_code == 200:
+                    tag = resp.json().get("tag_name", "")
+                    if tag:
+                        return tag
+        except Exception:
+            pass
+
+        # Strategy 2: HTML redirect (immune to REST rate limits)
+        try:
+            with httpx.Client(timeout=self._timeout, follow_redirects=True) as client:
+                resp = client.head(
+                    f"https://github.com/{owner}/{repo}/releases/latest"
+                )
+                # Final URL is .../releases/tag/<tagname>
+                final_path = str(resp.url).rstrip("/")
+                tag = final_path.split("/")[-1]
+                if tag and tag not in ("latest", "releases", repo):
+                    return tag
+        except Exception:
+            pass
+
+        return None
 
 
 # ---------------------------------------------------------------------------

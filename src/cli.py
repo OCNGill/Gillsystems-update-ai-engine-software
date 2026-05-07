@@ -125,16 +125,21 @@ def print_version_table(
     table.add_column("Status", no_wrap=True)
 
     for component, installed, latest, needs_update in rows:
-        installed_str = installed or "[dim]not installed[/dim]"
-        latest_str = latest or "[dim]unknown[/dim]"
+        # Build installed cell — use Text.from_markup so Rich tags render properly
+        if installed:
+            installed_styled = Text(installed, style="version_old" if needs_update else "success")
+        else:
+            installed_styled = Text.from_markup("[dim]not installed[/dim]")
+
+        # Build latest cell
+        latest_styled = Text(latest) if latest else Text.from_markup("[dim]unknown[/dim]")
+
         if needs_update:
             status = Text("UPDATE AVAILABLE", style="bold yellow")
-            installed_styled = Text(installed_str, style="version_old")
         else:
             status = Text("current", style="success")
-            installed_styled = Text(installed_str, style="success")
 
-        table.add_row(component, installed_styled, latest_str, status)
+        table.add_row(component, installed_styled, latest_styled, status)
 
     console.print(table)
 
