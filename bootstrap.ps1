@@ -11,7 +11,20 @@
 # Usage: bootstrap.ps1 [args passed through to src.main]
 
 $ROOT = $PSScriptRoot
+
+
 $AppArgs = $args   # pass-through to src.main (e.g. --dry-run, --check-only)
+
+# ── Windows Unicode support ────────────────────────────────────────────────
+# PYTHONUTF8 tells Python 3.12+ to use UTF-8 for all stdio.
+# Without this, Rich box-drawing characters get mangled when piped through
+# PowerShell 5.1's Tee-Object (which transcodes to the OEM code page).
+$env:PYTHONUTF8 = '1'
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    # PowerShell 5.1 uses the console's OEM output encoding by default.
+    # Force UTF-8 so Rich Unicode glyphs survive the Tee-Object pipe.
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 function Write-Step([string]$msg, [string]$color = 'Cyan') {
@@ -166,12 +179,16 @@ Write-Host ''
 
 Push-Location $ROOT
 try {
-    # Tee-Object writes to log AND streams to console simultaneously.
-    # $LASTEXITCODE after Tee-Object reflects the native process exit code.
+    # CRITICAL FIX: Stderr → log file ONLY (avoids PowerShell 5.1 NativeCommandError noise).
+    # Stdout → both console AND log via Tee-Object (Append to avoid double-write).
+    # PowerShell 5.1 treats stderr bytes as errors and wraps them in red
+    # NativeCommandError decorations — httpx INFO logs via stderr trigger this.
+    # By sending stderr directly to the log file and only piping stdout through
+    # Tee-Object, the console stays clean while the log has full detail.
     if ($AppArgs.Count -gt 0) {
-        & $python -u -m src.main @AppArgs 2>&1 | Tee-Object -FilePath $logFile
+        & $python -u -m src.main @AppArgs 2>>$logFile | Tee-Object -FilePath $logFile -Append
     } else {
-        & $python -u -m src.main 2>&1 | Tee-Object -FilePath $logFile
+        & $python -u -m src.main 2>>$logFile | Tee-Object -FilePath $logFile -Append
     }
     $exitCode = $LASTEXITCODE
 } finally {

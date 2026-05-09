@@ -102,6 +102,13 @@ class HIPUpdater:
         url = f"{base}/6.3.1/HIP-SDK-Installer-6.3.1.0.exe"
         return url, "6.3.1"
 
+
+
+
+
+
+
+
     # ------------------------------------------------------------------
     # Download
     # ------------------------------------------------------------------
@@ -176,8 +183,20 @@ class HIPUpdater:
         Ensure HIP_PATH, ROCM_PATH, and PATH are set in the system environment.
         These are typically set by the installer itself, but we verify and patch.
         """
-        # Common HIP SDK install locations
+
+
+
+
+
+
+
+                # Common HIP SDK install locations — newest-first to pick the latest install.
+        # ROCm 7.x is current as of HIP SDK 7.2.2 (required for latest GGML tensor formats).
         candidates = [
+            Path("C:/Program Files/AMD/ROCm/7.3"),
+            Path("C:/Program Files/AMD/ROCm/7.2"),
+            Path("C:/Program Files/AMD/ROCm/7.1"),
+            Path("C:/Program Files/AMD/ROCm/7.0"),
             Path("C:/Program Files/AMD/ROCm/6.3"),
             Path("C:/Program Files/AMD/ROCm/6.2"),
             Path("C:/Program Files/AMD/ROCm/6.1"),

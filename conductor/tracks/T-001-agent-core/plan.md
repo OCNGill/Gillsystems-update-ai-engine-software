@@ -56,3 +56,16 @@ _Completed 2026-05-06_
 - [x] Locked `.exe` handling: rename existing binaries to `.exe.old` before `cmake --install`
 - [x] Add `gfx906` (Radeon VII / Vega 20) and `gfx1033` (Steam Deck Van Gogh APU) to default targets
 - [x] Update all documentation and conductor files to reflect current state
+
+## Phase 8: Windows 11 Gen-2 Hardening (Debug / Deliver)
+_Completed 2026-05-06_
+- [x] `PYTHONUTF8=1` in `os.environ` before any stdio in `cli.py` — ensures Python 3.12+ UTF-8 I/O on Windows
+- [x] `$env:PYTHONUTF8 = '1'` and `[Console]::OutputEncoding = UTF8` in `bootstrap.ps1` — prevents Rich glyph corruption in PowerShell 5.1 Tee-Object pipe
+- [x] Stderr isolation in `bootstrap.ps1` — changed `2>&1 | Tee-Object` to `2>>$logFile | Tee-Object -Append` — eliminates PowerShell NativeCommandError red noise from httpx logs
+- [x] httpx/httpcore log level set to WARNING in `main.py` — stops INFO HTTP request logs from polluting stderr
+- [x] HIP SDK 7.x version/URL search range in `hip_updater.py` — lists 7.2.2→7.0.0 (was only 6.x); fallback URL updated to 7.2.2
+- [x] Environment scanner in `hip_updater.py` — searches ROCm 7.0–7.3 paths first (was only 6.1–6.3)
+- [x] Test: mock HEAD failure in `test_get_latest_llama_api_failure` — covers HTML redirect fallback path
+- [x] Create `CHANGELOG.md` with full project history from git log
+- [x] Update `conductor/setup_state.json` phase to `Debug / Deliver`
+- [x] Update `conductor/index.md` phase to `Debug / Deliver`

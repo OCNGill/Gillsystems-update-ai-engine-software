@@ -119,7 +119,10 @@ class TestVersionIntel:
             mock_client = MagicMock()
             mock_client.__enter__ = MagicMock(return_value=mock_client)
             mock_client.__exit__ = MagicMock(return_value=False)
+            # GET fails (API strategy)
             mock_client.get.side_effect = Exception("connection refused")
+            # HEAD also fails (HTML redirect fallback)
+            mock_client.head.side_effect = Exception("connection refused")
             mock_client_cls.return_value = mock_client
 
             version, error = self.vi._get_latest_llama()

@@ -456,11 +456,15 @@ def main() -> None:
 
     # Configure logging
     log_level = logging.DEBUG if cfg.behavior.verbose else getattr(logging, cfg.log_level, logging.INFO)
-    logging.basicConfig(
+        logging.basicConfig(
         level=log_level,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         datefmt="%H:%M:%S",
     )
+
+    # httpx INFO logs pollute stderr and trigger PowerShell NativeCommandError
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
 
     print_banner(dry_run=cfg.behavior.dry_run)
 

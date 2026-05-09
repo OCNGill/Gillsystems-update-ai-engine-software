@@ -13,6 +13,9 @@ from typing import Generator, List, Optional, Tuple
 
 # Ensure UTF-8 output on Windows terminals (cp1252 cannot render Rich's Unicode symbols)
 if sys.platform == "win32":
+    # PYTHONUTF8 tells Python 3.12+ to use UTF-8 for all I/O.
+    # Must be set before any stdio interaction for it to take effect.
+    os.environ["PYTHONUTF8"] = "1"
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
     if hasattr(sys.stdout, "reconfigure"):
         try:
