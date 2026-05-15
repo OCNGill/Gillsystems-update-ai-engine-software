@@ -28,6 +28,17 @@ _VCVARS_SEARCH_PATHS: list[str] = [
     r"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat",
 ]
 
+_HIP_RUNTIME_DLL_GLOBS: tuple[str, ...] = (
+    "amdhip64*.dll",
+    "libamdhip64*.dll",
+    "amd_comgr*.dll",
+    "hsa*.dll",
+    "hip*.dll",
+    "libhip*.dll",
+    "roc*.dll",
+    "libroc*.dll",
+)
+
 
 class LlamaBuilderWindows:
     """Clones, builds, and installs llama.cpp on Windows with AMD HIP."""
@@ -253,6 +264,18 @@ class LlamaBuilderWindows:
         _run(install_cmd)
         print_success(f"Installed to {self.install_dir}")
 
+        hip_path = os.environ.get("HIP_PATH") or _find_hip_path()
+        if hip_path:
+            copied = _bundle_hip_runtime_libraries(hip_path, self.install_dir / "bin")
+            if copied:
+                print_info(
+                    f"Bundled {copied} HIP runtime DLL"
+                    f"{'' if copied == 1 else 's'} into {self.install_dir / 'bin'}."
+                )
+            for runtime_dir in _hip_runtime_dirs(hip_path):
+                _append_to_user_path(str(runtime_dir))
+                print_info(f"Added {runtime_dir} to user PATH.")
+
         # Add install bin dir to user PATH in registry
         bin_dir = str(self.install_dir / "bin")
         _append_to_user_path(bin_dir)
@@ -267,17 +290,31 @@ class LlamaBuilderWindows:
             print_dry_run("Would validate: llama-cli.exe --version")
             return
 
+        hip_path = os.environ.get("HIP_PATH") or _find_hip_path()
+        runtime_env = _prepend_to_path_env(
+            os.environ.copy(),
+            [str(self.install_dir / "bin"), *[str(path) for path in _hip_runtime_dirs(hip_path)]],
+        )
+
         for binary in ("llama-cli.exe", "llama-server.exe", "main.exe"):
             bin_path = self.install_dir / "bin" / binary
             if bin_path.exists():
                 try:
                     result = subprocess.run(
                         [str(bin_path), "--version"],
-                        capture_output=True, text=True, timeout=10
+                        capture_output=True,
+                        text=True,
+                        timeout=10,
+                        env=runtime_env,
                     )
-                    output = (result.stdout + result.stderr).strip().split("\n")[0]
-                    print_success(f"{binary}: {output[:80]}")
-                    return
+                    output_lines = (result.stdout + result.stderr).strip().splitlines()
+                    first_line = output_lines[0] if output_lines else "(no version output)"
+                    if result.returncode == 0:
+                        print_success(f"{binary}: {first_line[:80]}")
+                        return
+                    print_warning(
+                        f"{binary} exited with code {result.returncode}: {first_line[:120]}"
+                    )
                 except Exception as exc:
                     print_warning(f"Could not run {binary}: {exc}")
 
@@ -341,6 +378,63 @@ def _hip_has_rocwmma(hip_path: Optional[str]) -> bool:
     if not hip_path:
         return False
     return Path(hip_path, "include", "rocwmma", "rocwmma-version.hpp").exists()
+
+
+def _hip_runtime_dirs(hip_path: Optional[str]) -> list[Path]:
+    """Return existing directories that can contain Windows HIP runtime DLLs."""
+    if not hip_path:
+        return []
+
+    hip_root = Path(hip_path)
+    candidates = [hip_root / "bin", hip_root / "lib", hip_root / "lib64"]
+    return [candidate for candidate in candidates if candidate.exists()]
+
+
+def _bundle_hip_runtime_libraries(hip_path: Optional[str], install_bin: Path) -> int:
+    """Copy HIP runtime DLLs next to llama.cpp binaries for reliable Windows launches."""
+    runtime_dirs = _hip_runtime_dirs(hip_path)
+    if not runtime_dirs:
+        return 0
+
+    install_bin.mkdir(parents=True, exist_ok=True)
+
+    copied = 0
+    seen: set[str] = set()
+    for runtime_dir in runtime_dirs:
+        for pattern in _HIP_RUNTIME_DLL_GLOBS:
+            for dll_path in runtime_dir.glob(pattern):
+                dll_key = dll_path.name.lower()
+                if dll_key in seen:
+                    continue
+                shutil.copy2(dll_path, install_bin / dll_path.name)
+                seen.add(dll_key)
+                copied += 1
+
+    return copied
+
+
+def _prepend_to_path_env(base_env: dict, extra_dirs: list[str]) -> dict:
+    """Return an env copy with extra directories prepended to PATH once each."""
+    env = base_env.copy()
+    unique_dirs: list[str] = []
+    seen: set[str] = set()
+
+    for entry in extra_dirs:
+        normalized = entry.strip()
+        if not normalized:
+            continue
+        lowered = normalized.lower()
+        if lowered in seen:
+            continue
+        seen.add(lowered)
+        unique_dirs.append(normalized)
+
+    if not unique_dirs:
+        return env
+
+    current_path = env.get("PATH", "")
+    env["PATH"] = ";".join(unique_dirs + ([current_path] if current_path else []))
+    return env
 
 
 def _build_env(vcvars: Path) -> dict:
