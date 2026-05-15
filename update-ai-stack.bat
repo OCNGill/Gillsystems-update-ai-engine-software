@@ -21,8 +21,8 @@ FOR %%A IN (%*) DO IF /I "%%A"=="--dry-run" SET IS_DRYRUN=1
 NET SESSION >nul 2>&1
 IF !ERRORLEVEL! NEQ 0 (
     IF !IS_DRYRUN! EQU 0 (
-        echo  [Gillsystems] Requesting Administrator privileges...
-        powershell -NoProfile -Command "Start-Process cmd.exe -ArgumentList '/k', '\"%~f0\" %*' -Verb RunAs"
+        echo  [Gillsystems] Administrator privileges required. Attempting auto-elevation...
+        powershell -NoProfile -Command "try { Start-Process cmd.exe -ArgumentList '/k', '\"%~f0\" %*' -Verb RunAs -ErrorAction Stop } catch { Write-Host ''; Write-Host '  [Gillsystems] ERROR: Auto-elevation failed (UAC is completely disabled in Windows).'; Write-Host '  Please Right-Click the .bat file and select ''Run as Administrator''.'; Write-Host ''; Read-Host 'Press Enter to exit...' }"
         exit /b
     )
     echo  [Gillsystems] Dry-run mode - continuing without admin.
