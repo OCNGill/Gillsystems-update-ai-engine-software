@@ -332,7 +332,9 @@ def _find_hip_path() -> Optional[str]:
 def _build_env(vcvars: Path) -> dict:
     """
     Return an environment dict that includes VS build tool variables.
-    Runs vcvarsall.bat and captures the resulting environment.
+    Starts from the current process environment (so TMP, TEMP, SystemRoot,
+    USERPROFILE, etc. are always present) then overlays vcvarsall.bat output
+    so MSVC-specific vars (LIB, INCLUDE, PATH extensions) are added on top.
     """
     script = f'call "{vcvars}" amd64 && set'
     result = subprocess.run(
@@ -341,7 +343,11 @@ def _build_env(vcvars: Path) -> dict:
         text=True,
         timeout=60,
     )
-    env: dict[str, str] = {}
+    if result.returncode != 0:
+        logger.warning("vcvarsall.bat returned non-zero (%d); MSVC env may be incomplete.", result.returncode)
+    # Base on current process env so TMP, TEMP, SystemRoot, etc. are always
+    # present — vcvarsall.bat only adds/modifies MSVC-specific variables.
+    env = os.environ.copy()
     for line in result.stdout.splitlines():
         if "=" in line:
             key, _, value = line.partition("=")
